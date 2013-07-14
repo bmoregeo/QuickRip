@@ -3,7 +3,7 @@ __author__ = 'christopherfricke'
 import subprocess
 import os
 import imdb
-
+import datetime
 
 class dvd(object):
     """
@@ -12,8 +12,10 @@ class dvd(object):
     def __init__(self):
         self._disc_index = None
         self._output_path = None
+        self._filename = None
         self._title = None
         self._output_workspace = None
+        self._modified_date = datetime.datetime.now()
 
 
     @property
@@ -66,6 +68,27 @@ class dvd(object):
         self._output_workspace = output_workspace
 
     @property
+    def filename(self):
+        """
+        Returns the original filename of the disc image
+
+        :return: Filename of disc
+        """
+        return self._filename
+
+    @filename.setter
+    def filename(self, filename):
+        """
+        Sets the filename of the original disc and populates the title with a cleaned up version.
+
+        :param filename: Filename of disc
+        :type filename: basestring
+        :return:
+        """
+        self._filename = filename
+        self._set_title()
+
+    @property
     def title(self):
         """
         Returns a cleaned up version of the disc's title
@@ -74,8 +97,7 @@ class dvd(object):
         """
         return self._title
 
-    @title.setter
-    def title(self, title):
+    def _set_title(self):
         """
         Cleans up the disc's file name and attempts to query IMDB for the its correct title.
 
@@ -84,7 +106,7 @@ class dvd(object):
         :return:
         """
         ia = imdb.IMDb()
-        title = title.strip()
+        title = self.filename.strip()
         title = title.replace('"', '')
         title = title.replace("_", " ")
         title = title.title()
@@ -93,10 +115,8 @@ class dvd(object):
 
         if len(request_title) > 0:
             self._title = request_title[0]
-        elif len(title) == 0:
-            self._title = request_title
-
-        print self._title
+        elif len(request_title) == 0:
+            self._title = title
 
     def rip(self, minimum_length=22):
         """
@@ -116,13 +136,15 @@ class dvd(object):
             'mkv',
             'disc:%s' % self.disc_index,
             '0',
-            self.output_path,
+            '"%s"' % self.output_path,
+            '-r',
             #'--cache=%d' % cache,
             '--noscan',
-            '--directio=false',
             '--debug',
-            '--minlength=%d' % minimum_length * 60
+            '--minlength=%s' % (minimum_length * 60)
         ]
+        print ' '.join(command)
+
         subprocess.call(command)
 
         disc_eject_command = [
@@ -132,4 +154,39 @@ class dvd(object):
             'tray',
             'eject'
         ]
-        subprocess.call(disc_eject_command)
+        #subprocess.call(disc_eject_command)
+
+    @property
+    def status(self):
+        """
+        Returns status of disc ripping process
+        :return: Disc Rip Status
+        """
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        """
+        :param status: Status of Disc Rip One of following values ("Added to Queue", "Ripping", or "Ripped")
+        :type status: basestring
+        :return:
+        """
+        self._status = status
+
+    @property
+    def modified_date(self):
+        """
+        Return the last modified date on a disc
+        :return: Datestamp
+        """
+        return self._modified_date
+
+    @modified_date.setter
+    def modified_date(self, modified_date):
+        """
+        Set the last modified date on a disc
+        :param modified_date: Datestamp of last modified date
+        :type modified_date: datetime
+        :return:
+        """
+        self._modified_date = modified_date

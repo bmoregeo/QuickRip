@@ -1,30 +1,24 @@
-import dvd
+from QuickRip.models import dvd
 
 __author__ = 'christopherfricke'
-import subprocess
+import sql
+import datetime
+
+def rip(output_workspace):
+    status = sql.table('example.db')
+    #discs = status.select("SELECT * FROM status where status = 'Added to Queue'")
+    discs = status.select("SELECT * FROM status where status = 'Ripping'")
+
+    for disc in discs:
+        disc.status = 'Ripping'
+        disc.modified_date = datetime.datetime.now()
+        disc.output_workspace = output_workspace
+        status.update(disc)
 
 
-def rip_discs(output_workspace):
 
-    get_discs_command = ['makemkvcon', '-r', 'info']
-    proc = subprocess.Popen(get_discs_command,
-                            stderr=subprocess.PIPE,
-                            stdout=subprocess.PIPE)
-
-    info = proc.stdout.read()
-
-    print info
-
-    for line in info.split('\n'):
-        if line[:3] == 'DRV':
-            fields = line.split(',')
-
-            if len(fields[5].replace('"', '')) > 0:
-                d = dvd.dvd()
-                d.disc_index = fields[0][4:]
-                d.title = fields[5]
-                d.output_workspace = output_workspace
-                d.rip()
+        print 'Ripping %s on Tray %s' % (disc.title, disc.disc_index)
+        disc.rip()
 
 
 if __name__ == '__main__':
@@ -33,4 +27,4 @@ if __name__ == '__main__':
 
     output_path = '/Users/christopherfricke/Source/quickrip/out'
     #print output_path
-    discs = rip_discs(output_path)
+    discs = rip(output_path)
