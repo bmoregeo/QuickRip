@@ -28,7 +28,7 @@ class table():
             self.cursor.execute("INSERT INTO %s VALUES ('%s', %s, '%s', '%s')" % (
                 self.tablename,
                 disc.modified_date,
-                disc.index,
+                disc.disc_index,
                 disc.filename,
                 disc.status
             ))

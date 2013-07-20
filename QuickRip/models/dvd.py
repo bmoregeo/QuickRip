@@ -136,7 +136,7 @@ class dvd(object):
             'mkv',
             'disc:%s' % self.disc_index,
             '0',
-            '"%s"' % self.output_path,
+            self.output_path,
             '-r',
             #'--cache=%d' % cache,
             '--noscan',

@@ -3,9 +3,10 @@ import subprocess
 
 from models import dvd
 import sql
+import settings
 
-def add_to_queue():
-    status = sql.table('example.db')
+def add_to_queue(database):
+    status = sql.table(database)
 
     get_discs_command = ['makemkvcon', '-r', 'info']
     proc = subprocess.Popen(get_discs_command,
@@ -30,4 +31,4 @@ def add_to_queue():
 
 
 if __name__ == '__main__':
-    add_to_queue()
+    add_to_queue(settings.database)
